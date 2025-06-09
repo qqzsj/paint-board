@@ -1,4 +1,4 @@
-import { ChangeEvent, useState } from 'react'
+import { ChangeEvent, useState, useCallback } from 'react'
 import useBoardStore from '@/store/board'
 import { useTranslation } from 'react-i18next'
 import { ActionMode } from '@/constants'
@@ -13,6 +13,7 @@ import CopyIcon from '@/components/icons/boardOperation/copy.svg?react'
 import TextIcon from '@/components/icons/boardOperation/text.svg?react'
 import DeleteIcon from '@/components/icons/boardOperation/delete.svg?react'
 import FileListIcon from '@/components/icons/boardOperation/fileList.svg?react'
+import FullscreenIcon from '@/components/icons/boardOperation/fullscreen.svg?react'
 import CloseIcon from '@/components/icons/close.svg?react'
 import MenuIcon from '@/components/icons/menu.svg?react'
 import FileList from './fileList'
@@ -24,12 +25,36 @@ const BoardOperation = () => {
   const { mode } = useBoardStore()
   const [showFile, updateShowFile] = useState(false) // show file list draw
   const [showOperation, setShowOperation] = useState(true) // mobile: show all operation
+  const [isFullscreen, setIsFullscreen] = useState(false)
 
   const [downloadImageURL, setDownloadImageURL] = useState('')
   const [showDownloadModal, setShowDownloadModal] = useState(false)
 
   const [uploadImageURL, setUploadImageURL] = useState('')
   const [showUploadModal, setShowUploadModal] = useState(false)
+
+  // 切换全屏
+  const toggleFullscreen = useCallback(() => {
+    if (!document.fullscreenElement) {
+      document.documentElement
+        .requestFullscreen()
+        .then(() => {
+          setIsFullscreen(true)
+        })
+        .catch((err) => {
+          console.error(`Error attempting to enable fullscreen: ${err.message}`)
+        })
+    } else {
+      document
+        .exitFullscreen()
+        .then(() => {
+          setIsFullscreen(false)
+        })
+        .catch((err) => {
+          console.error(`Error attempting to exit fullscreen: ${err.message}`)
+        })
+    }
+  }, [])
 
   // copy activity object
   const copyObject = () => {
@@ -158,6 +183,13 @@ const BoardOperation = () => {
               data-tip={t('operate.save')}
             >
               <SaveIcon />
+            </div>
+            <div
+              onClick={toggleFullscreen}
+              className="min-xs:tooltip cursor-pointer py-1.5 px-2 hover:bg-slate-200"
+              data-tip={t('operate.fullscreen')}
+            >
+              <FullscreenIcon />
             </div>
             <label
               htmlFor="my-drawer-4"
