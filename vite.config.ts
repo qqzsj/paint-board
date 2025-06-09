@@ -22,7 +22,18 @@ const getCache = ({ name, pattern }: any) => ({
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: '/paint-board/',
+  base: '/',
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    rollupOptions: {
+      output: {
+        assetFileNames: 'assets/[name].[hash][extname]',
+        chunkFileNames: 'assets/[name].[hash].js',
+        entryFileNames: 'assets/[name].[hash].js'
+      }
+    }
+  },
   optimizeDeps: {
     esbuildOptions: { supported: { bigint: true } }
   },
@@ -49,18 +60,18 @@ export default defineConfig({
       manifest: {
         name: 'PAINT-BOARD',
         short_name: 'paint-board',
-        start_url: '/paint-board/',
+        start_url: '/',
         display: 'standalone',
         background_color: '#eef1ff',
         theme_color: '#eef1ff',
         icons: [
           {
-            src: '/paint-board/pwa-192.png',
+            src: '/pwa-192.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: '/paint-board/pwa-512.png',
+            src: '/pwa-512.png',
             sizes: '512x512',
             type: 'image/png'
           }
