@@ -68,7 +68,9 @@
     "image": "upload image",
     "clean": "clean",
     "save": "Save as image",
-    "fileList": "File List"
+    "fileList": "File List",
+    "fullscreen": "Enter Fullscreen",
+    "exitFullscreen": "Exit Fullscreen"
   },
   "info": {
     "welecome": "Welcome to star",

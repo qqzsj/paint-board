@@ -68,7 +68,9 @@
     "image": "上傳圖片",
     "clean": "清除畫板",
     "save": "保存爲圖片",
-    "fileList": "文件列表"
+    "fileList": "文件列表",
+    "fullscreen": "進入全螢幕",
+    "exitFullscreen": "退出全螢幕"
   },
   "info": {
     "welecome": "歡迎Star",
