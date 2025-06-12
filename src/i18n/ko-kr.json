@@ -68,7 +68,9 @@
     "image": "이미지 업로드",
     "clean": "지우기",
     "save": "이미지로 저장",
-    "fileList": "파일 목록"
+    "fileList": "파일 목록",
+    "fullscreen": "전체 화면",
+    "exitFullscreen": "전체 화면 종료"
   },
   "info": {
     "welecome": "별점 환영합니다",

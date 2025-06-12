@@ -68,7 +68,9 @@
     "image": "画像アップロード",
     "clean": "クリア",
     "save": "画像として保存",
-    "fileList": "ファイルリスト"
+    "fileList": "ファイルリスト",
+    "fullscreen": "全画面表示",
+    "exitFullscreen": "全画面を終了"
   },
   "info": {
     "welecome": "スターへようこそ",

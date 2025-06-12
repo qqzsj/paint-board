@@ -1,8 +1,9 @@
-import { ChangeEvent, useState } from 'react'
+import { ChangeEvent, useState, useCallback, useEffect } from 'react'
 import useBoardStore from '@/store/board'
 import { useTranslation } from 'react-i18next'
 import { ActionMode } from '@/constants'
 import { paintBoard } from '@/core/paintBoard'
+import { isMobile as isMobileFn } from '@/utils'
 
 import UndoIcon from '@/components/icons/boardOperation/undo.svg?react'
 import RedoIcon from '@/components/icons/boardOperation/redo.svg?react'
@@ -13,23 +14,57 @@ import CopyIcon from '@/components/icons/boardOperation/copy.svg?react'
 import TextIcon from '@/components/icons/boardOperation/text.svg?react'
 import DeleteIcon from '@/components/icons/boardOperation/delete.svg?react'
 import FileListIcon from '@/components/icons/boardOperation/fileList.svg?react'
+import FullscreenIcon from '@/components/icons/boardOperation/fullscreen.svg?react'
+import FullscreenExitIcon from '@/components/icons/boardOperation/fullscreen-exit.svg?react'
 import CloseIcon from '@/components/icons/close.svg?react'
 import MenuIcon from '@/components/icons/menu.svg?react'
 import FileList from './fileList'
 import DownloadImage from './downloadImage'
 import UploadImage from './uploadImage'
 
+const isMobile = isMobileFn()
+
 const BoardOperation = () => {
   const { t } = useTranslation()
   const { mode } = useBoardStore()
   const [showFile, updateShowFile] = useState(false) // show file list draw
   const [showOperation, setShowOperation] = useState(true) // mobile: show all operation
+  const [isFullscreen, setIsFullscreen] = useState(false)
 
   const [downloadImageURL, setDownloadImageURL] = useState('')
   const [showDownloadModal, setShowDownloadModal] = useState(false)
 
   const [uploadImageURL, setUploadImageURL] = useState('')
   const [showUploadModal, setShowUploadModal] = useState(false)
+
+  // toggle fullscreen mode
+  const toggleFullscreen = useCallback(async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen()
+      } else {
+        await document.exitFullscreen()
+      }
+    } catch (err) {
+      console.error('fullscreen error:', err)
+    }
+  }, [])
+
+  /**
+   * listen fullscreen event
+   * 1. browser behavior
+   * 2. toggleFullscreen trigger
+   */
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement)
+    }
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange)
+    }
+  }, [])
 
   // copy activity object
   const copyObject = () => {
@@ -159,6 +194,17 @@ const BoardOperation = () => {
             >
               <SaveIcon />
             </div>
+            {!isMobile && (
+              <div
+                onClick={toggleFullscreen}
+                className="min-xs:tooltip cursor-pointer py-1.5 px-2 hover:bg-slate-200"
+                data-tip={t(
+                  isFullscreen ? 'operate.exitFullscreen' : 'operate.fullscreen'
+                )}
+              >
+                {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+              </div>
+            )}
             <label
               htmlFor="my-drawer-4"
               className="min-xs:tooltip cursor-pointer py-1.5 pl-2 pr-3 rounded-r-full hover:bg-slate-200 xs:pr-2 xs:rounded-r-none xs:rounded-b-full"
