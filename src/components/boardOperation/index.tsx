@@ -1,4 +1,4 @@
-import { ChangeEvent, useState, useCallback } from 'react'
+import { ChangeEvent, useState, useCallback, useEffect } from 'react'
 import useBoardStore from '@/store/board'
 import { useTranslation } from 'react-i18next'
 import { ActionMode } from '@/constants'
@@ -14,6 +14,7 @@ import TextIcon from '@/components/icons/boardOperation/text.svg?react'
 import DeleteIcon from '@/components/icons/boardOperation/delete.svg?react'
 import FileListIcon from '@/components/icons/boardOperation/fileList.svg?react'
 import FullscreenIcon from '@/components/icons/boardOperation/fullscreen.svg?react'
+import FullscreenExitIcon from '@/components/icons/boardOperation/fullscreen-exit.svg?react'
 import CloseIcon from '@/components/icons/close.svg?react'
 import MenuIcon from '@/components/icons/menu.svg?react'
 import FileList from './fileList'
@@ -53,6 +54,18 @@ const BoardOperation = () => {
         .catch((err) => {
           console.error(`Error attempting to exit fullscreen: ${err.message}`)
         })
+    }
+  }, [])
+
+  // 监听全屏变化
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement)
+    }
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange)
     }
   }, [])
 
@@ -187,9 +200,11 @@ const BoardOperation = () => {
             <div
               onClick={toggleFullscreen}
               className="min-xs:tooltip cursor-pointer py-1.5 px-2 hover:bg-slate-200"
-              data-tip={t('operate.fullscreen')}
+              data-tip={t(
+                isFullscreen ? 'operate.exitFullscreen' : 'operate.fullscreen'
+              )}
             >
-              <FullscreenIcon />
+              {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
             </div>
             <label
               htmlFor="my-drawer-4"
