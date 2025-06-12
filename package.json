@@ -67,7 +67,7 @@
     "*.{js,jsx,tsx,ts}": [
       "pnpm lint:script"
     ],
-    "*.{css}": [
+    "*.css": [
       "pnpm lint:style"
     ]
   }
