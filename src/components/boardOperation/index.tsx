@@ -3,6 +3,7 @@ import useBoardStore from '@/store/board'
 import { useTranslation } from 'react-i18next'
 import { ActionMode } from '@/constants'
 import { paintBoard } from '@/core/paintBoard'
+import { isMobile as isMobileFn } from '@/utils'
 
 import UndoIcon from '@/components/icons/boardOperation/undo.svg?react'
 import RedoIcon from '@/components/icons/boardOperation/redo.svg?react'
@@ -21,6 +22,8 @@ import FileList from './fileList'
 import DownloadImage from './downloadImage'
 import UploadImage from './uploadImage'
 
+const isMobile = isMobileFn()
+
 const BoardOperation = () => {
   const { t } = useTranslation()
   const { mode } = useBoardStore()
@@ -34,30 +37,24 @@ const BoardOperation = () => {
   const [uploadImageURL, setUploadImageURL] = useState('')
   const [showUploadModal, setShowUploadModal] = useState(false)
 
-  // 切换全屏
-  const toggleFullscreen = useCallback(() => {
-    if (!document.fullscreenElement) {
-      document.documentElement
-        .requestFullscreen()
-        .then(() => {
-          setIsFullscreen(true)
-        })
-        .catch((err) => {
-          console.error(`Error attempting to enable fullscreen: ${err.message}`)
-        })
-    } else {
-      document
-        .exitFullscreen()
-        .then(() => {
-          setIsFullscreen(false)
-        })
-        .catch((err) => {
-          console.error(`Error attempting to exit fullscreen: ${err.message}`)
-        })
+  // toggle fullscreen mode
+  const toggleFullscreen = useCallback(async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen()
+      } else {
+        await document.exitFullscreen()
+      }
+    } catch (err) {
+      console.error('fullscreen error:', err)
     }
   }, [])
 
-  // 监听全屏变化
+  /**
+   * listen fullscreen event
+   * 1. browser behavior
+   * 2. toggleFullscreen trigger
+   */
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement)
@@ -197,15 +194,17 @@ const BoardOperation = () => {
             >
               <SaveIcon />
             </div>
-            <div
-              onClick={toggleFullscreen}
-              className="min-xs:tooltip cursor-pointer py-1.5 px-2 hover:bg-slate-200"
-              data-tip={t(
-                isFullscreen ? 'operate.exitFullscreen' : 'operate.fullscreen'
-              )}
-            >
-              {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
-            </div>
+            {!isMobile && (
+              <div
+                onClick={toggleFullscreen}
+                className="min-xs:tooltip cursor-pointer py-1.5 px-2 hover:bg-slate-200"
+                data-tip={t(
+                  isFullscreen ? 'operate.exitFullscreen' : 'operate.fullscreen'
+                )}
+              >
+                {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+              </div>
+            )}
             <label
               htmlFor="my-drawer-4"
               className="min-xs:tooltip cursor-pointer py-1.5 pl-2 pr-3 rounded-r-full hover:bg-slate-200 xs:pr-2 xs:rounded-r-none xs:rounded-b-full"
