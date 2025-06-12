@@ -1,3 +1,9 @@
+# 1.5.7
+
+### Feat
+
+- add fullscreen
+
 # 1.5.6
 
 ### Feat
