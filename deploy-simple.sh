@@ -1,50 +1,108 @@
 #!/bin/bash
 
-# 简单部署脚本 - 适用于单服务器部署
+# 绘画板项目简化部署脚本
+# 适用于Ubuntu服务器
 
-echo "开始部署 Paint Board 项目..."
+set -e
 
-# 1. 构建前端
-echo "构建前端..."
-npm run build
+echo "🎨 开始部署绘画板项目..."
 
-# 2. 安装后端依赖
-echo "安装后端依赖..."
-cd server
-npm install
-cd ..
+# 检查Docker是否安装
+if ! command -v docker &> /dev/null; then
+    echo "❌ Docker未安装，正在安装Docker..."
+    curl -fsSL https://get.docker.com -o get-docker.sh
+    sudo sh get-docker.sh
+    sudo usermod -aG docker $USER
+    echo "✅ Docker安装完成，请重新登录后运行此脚本"
+    exit 1
+fi
 
-# 3. 创建部署目录
-echo "创建部署目录..."
-mkdir -p deploy
-cp -r dist/* deploy/
-cp -r server deploy/
-cp package.json deploy/
+# 检查Docker Compose是否安装
+if ! command -v docker-compose &> /dev/null; then
+    echo "❌ Docker Compose未安装，正在安装..."
+    sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
+    echo "✅ Docker Compose安装完成"
+fi
 
-# 4. 创建启动脚本
-cat > deploy/start.sh << 'EOF'
-#!/bin/bash
+# 创建必要的目录
+echo "📁 创建必要的目录..."
+mkdir -p server/uploads
+mkdir -p server/data
+mkdir -p dist
 
-# 启动后端服务器
-cd server
-npm start &
-BACKEND_PID=$!
+# 设置目录权限
+echo "🔐 设置目录权限..."
+sudo chown -R $USER:$USER server/uploads
+sudo chown -R $USER:$USER server/data
+sudo chmod -R 755 server/uploads
+sudo chmod -R 755 server/data
 
-# 启动前端服务器（使用简单的HTTP服务器）
-cd ..
-npx serve -s . -l 8080 &
-FRONTEND_PID=$!
+# 停止现有容器
+echo "🛑 停止现有容器..."
+docker-compose down --remove-orphans || true
 
-echo "后端服务器 PID: $BACKEND_PID"
-echo "前端服务器 PID: $FRONTEND_PID"
-echo "前端访问地址: http://localhost:8080"
-echo "后端API地址: http://localhost:3001"
+# 先构建前端
+echo "🔨 构建前端..."
+docker build -f Dockerfile.frontend -t paint-board-frontend .
 
-# 等待进程结束
-wait
-EOF
+# 复制构建结果
+echo "📋 复制构建结果..."
+docker create --name temp-frontend paint-board-frontend
+docker cp temp-frontend:/usr/share/nginx/html/. ./dist/
+docker rm temp-frontend
 
-chmod +x deploy/start.sh
+# 启动后端和nginx服务
+echo "🚀 启动后端和nginx服务..."
+docker-compose up -d backend nginx
 
-echo "部署完成！"
-echo "进入 deploy 目录运行 ./start.sh 启动服务" 
+# 等待服务启动
+echo "⏳ 等待服务启动..."
+sleep 10
+
+# 检查服务状态
+echo "🔍 检查服务状态..."
+docker-compose ps
+
+# 检查健康状态
+echo "🏥 检查服务健康状态..."
+if curl -f http://localhost:3001/api/health > /dev/null 2>&1; then
+    echo "✅ 后端服务健康检查通过"
+else
+    echo "❌ 后端服务健康检查失败"
+    docker-compose logs backend
+    exit 1
+fi
+
+if curl -f http://localhost:8080 > /dev/null 2>&1; then
+    echo "✅ 前端服务健康检查通过"
+else
+    echo "❌ 前端服务健康检查失败"
+    docker-compose logs nginx
+    exit 1
+fi
+
+echo ""
+echo "🎉 部署完成！"
+echo ""
+echo "📋 服务信息："
+echo "   🌐 前端地址: http://localhost:8080"
+echo "   🔧 后端API: http://localhost:8080/api"
+echo "   📊 健康检查: http://localhost:3001/api/health"
+echo ""
+echo "👤 默认管理员账户："
+echo "   用户名: admin"
+echo "   密码: admin123"
+echo ""
+echo "📝 使用说明："
+echo "   1. 访问 http://localhost:8080 进入登录页面"
+echo "   2. 管理员登录后会自动跳转到管理后台"
+echo "   3. 普通用户登录后可以开始绘画"
+echo "   4. 最多支持30个用户设备注册"
+echo ""
+echo "🔧 管理命令："
+echo "   查看日志: docker-compose logs -f"
+echo "   停止服务: docker-compose down"
+echo "   重启服务: docker-compose restart"
+echo "   更新服务: docker-compose up --build -d"
+echo "" 

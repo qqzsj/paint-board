@@ -56,7 +56,7 @@ docker-compose ps
 
 # 检查健康状态
 echo "🏥 检查服务健康状态..."
-if curl -f http://localhost:8080/api/health > /dev/null 2>&1; then
+if curl -f http://localhost:3001/api/health > /dev/null 2>&1; then
     echo "✅ 后端服务健康检查通过"
 else
     echo "❌ 后端服务健康检查失败"

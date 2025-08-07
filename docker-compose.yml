@@ -19,18 +19,6 @@ services:
     networks:
       - paint-board-network
 
-  # 前端构建
-  frontend-build:
-    build:
-      context: .
-      dockerfile: Dockerfile.frontend
-    container_name: paint-board-frontend-build
-    volumes:
-      - ./dist:/app/dist
-    command: npm run build
-    networks:
-      - paint-board-network
-
   # Nginx服务器
   nginx:
     image: nginx:alpine
