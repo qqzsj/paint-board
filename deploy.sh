@@ -44,7 +44,8 @@ docker-compose down --remove-orphans || true
 
 # 先构建前端
 echo "🔨 构建前端..."
-docker build -f Dockerfile.frontend -t paint-board-frontend .
+docker build -f /home/ubuntu/paint-board/Dockerfile.frontend -t paint-board-frontend /home/ubuntu/paint-board
+
 
 # 复制构建结果
 echo "📋 复制构建结果..."
