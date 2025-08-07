@@ -1,28 +1,52 @@
 version: '3.8'
 
 services:
-  # 后端服务
+  # 后端服务器
   backend:
     build:
       context: ./server
       dockerfile: Dockerfile
+    container_name: paint-board-backend
     ports:
       - "3001:3001"
-    volumes:
-      - ./server/users.db:/app/users.db
     environment:
       - NODE_ENV=production
+      - PORT=3001
+    volumes:
+      - ./server/uploads:/app/uploads
+      - ./server/data:/app/data
     restart: unless-stopped
+    networks:
+      - paint-board-network
 
-  # 前端服务
-  frontend:
+  # 前端构建
+  frontend-build:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+    container_name: paint-board-frontend-build
+    volumes:
+      - ./dist:/app/dist
+    command: npm run build
+    networks:
+      - paint-board-network
+
+  # Nginx服务器
+  nginx:
+    image: nginx:alpine
+    container_name: paint-board-nginx
     ports:
-      - "80:80"
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./dist:/usr/share/nginx/html
+      - ./server/uploads:/usr/share/nginx/html/uploads
     depends_on:
       - backend
-    environment:
-      - VITE_API_URL=http://localhost:3001
-    restart: unless-stopped 
+    restart: unless-stopped
+    networks:
+      - paint-board-network
+
+networks:
+  paint-board-network:
+    driver: bridge 
